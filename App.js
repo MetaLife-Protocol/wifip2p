@@ -9,6 +9,7 @@ import {
   Image,
   TouchableOpacity,
 } from 'react-native';
+import {Divider} from 'react-native-elements';
 import {
   initialize,
   startDiscoveringPeers,
@@ -56,6 +57,40 @@ function Item({item}) {
     </View>
   );
 }
+
+const devinfo = {
+  name: 'Sasha Ho',
+  status: 'Administrative Assistant',
+  photo:
+    'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?h=350&auto=compress&cs=tinysrgb',
+};
+
+const devInfo = () => {
+  return (
+    <View style={styles.devinfo}>
+      <Image
+        source={{uri: devinfo.photo}}
+        style={{width: 60, height: 60, borderRadius: 30}}
+      />
+      <View style={{alignItems: 'center', flex: 1}}>
+        <Text style={{fontWeight: 'bold'}}>{devinfo.name}</Text>
+        <Text>{devinfo.status}</Text>
+      </View>
+    </View>
+  );
+};
+
+const ItemDivider = () => {
+  return (
+    <View
+      style={{
+        height: 1,
+        width: '100%',
+        backgroundColor: '#607D8B',
+      }}
+    />
+  );
+};
 
 const activityStarter = NativeModules.ActivityStarter;
 const eventEmitterModule = NativeModules.EventEmitter;
@@ -322,7 +357,6 @@ export default class App extends PureComponent<Props> {
   render() {
     return (
       <View style={styles.container}>
-        <View style={{height: 8}} />
         <View style={styles.buttonDirection}>
           <Button
             title={'settings'}
@@ -338,14 +372,19 @@ export default class App extends PureComponent<Props> {
             }}
           />
         </View>
-        <View style={styles.listItem}>
-          <FlatList
-            style={{flex: 1}}
-            data={this.state.data}
-            renderItem={({item}) => <Item item={item} />}
-            keyExtractor={item => item.email}
-          />
-        </View>
+
+        <Text>{'ME'}</Text>
+        {ItemDivider()}
+        {devInfo()}
+
+        <Text> {'PEERS'} </Text>
+        {ItemDivider()}
+        <FlatList
+          style={{flex: 1}}
+          data={this.state.data}
+          renderItem={({item}) => <Item item={item} />}
+          keyExtractor={item => item.email}
+        />
       </View>
     );
 
@@ -395,9 +434,8 @@ export default class App extends PureComponent<Props> {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#F5FCFF',
+    marginTop: 20,
   },
   button: {
     height: 1,
@@ -415,6 +453,7 @@ const styles = StyleSheet.create({
 
   buttonDirection: {
     flexDirection: 'row',
+    justifyContent: 'center',
   },
 
   buttonPad: {
@@ -426,6 +465,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     width: '80%',
     flex: 1,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    borderRadius: 5,
+  },
+  devinfo: {
+    margin: 10,
+    padding: 10,
+    backgroundColor: '#FFF',
+    width: '80%',
     alignSelf: 'center',
     flexDirection: 'row',
     borderRadius: 5,
