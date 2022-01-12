@@ -1,5 +1,14 @@
 import React, {PureComponent} from 'react';
-import {StyleSheet, View, Button} from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Button,
+  NativeModules,
+  Text,
+  FlatList,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
 import {
   initialize,
   startDiscoveringPeers,
@@ -24,10 +33,58 @@ import {
 } from 'react-native-wifi-p2p';
 import {PermissionsAndroid} from 'react-native';
 
+function Item({item}) {
+  return (
+    <View style={styles.listItem}>
+      <Image
+        source={{uri: item.photo}}
+        style={{width: 60, height: 60, borderRadius: 30}}
+      />
+      <View style={{alignItems: 'center', flex: 1}}>
+        <Text style={{fontWeight: 'bold'}}>{item.name}</Text>
+        <Text>{item.status}</Text>
+      </View>
+      <TouchableOpacity
+        style={{
+          height: 50,
+          width: 50,
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}>
+        <Text style={{color: 'green'}}>Call</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+const activityStarter = NativeModules.ActivityStarter;
+const eventEmitterModule = NativeModules.EventEmitter;
+
 type Props = {};
 export default class App extends PureComponent<Props> {
   state = {
     devices: [],
+    data: [
+      {
+        name: 'Miyah Myles',
+        email: 'miyah.myles@gmail.com',
+        status: 'Data Entry Clerk',
+        photo:
+          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-0.3.5&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&s=707b9c33066bf8808c934c8ab394dff6',
+      },
+      {
+        name: 'June Cha',
+        email: 'june.cha@gmail.com',
+        status: 'Sales Manager',
+        photo: 'https://randomuser.me/api/portraits/women/44.jpg',
+      },
+      {
+        name: 'Iida Niskanen',
+        email: 'iida.niskanen@gmail.com',
+        status: 'Sales Manager',
+        photo: 'https://randomuser.me/api/portraits/women/68.jpg',
+      },
+    ],
   };
 
   async componentDidMount() {
@@ -44,8 +101,8 @@ export default class App extends PureComponent<Props> {
 
       console.log(
         granted === PermissionsAndroid.RESULTS.GRANTED
-          ? 'You can use the p2p mode'
-          : 'Permission denied: p2p mode will not work',
+          ? ' MTL: You can use the p2p mode'
+          : ' MTL: Permission denied: p2p mode will not work',
       );
 
       subscribeOnPeersUpdates(this.handleNewPeers);
@@ -55,12 +112,12 @@ export default class App extends PureComponent<Props> {
       const status = await startDiscoveringPeers();
       status.promise
         .then(() => {
-          console.log('startDiscoveringPeers ok: ');
+          console.log(' MTL: startDiscoveringPeers ok: ');
         })
         .catch((err: any) => {
-          console.log('startDiscoveringPeers err: ', err);
+          console.log(' MTL: startDiscoveringPeers err: ', err);
         });
-      console.log('startDiscoveringPeers status: ', status);
+      console.log(' MTL: startDiscoveringPeers status: ', status);
     } catch (e) {
       console.error(e);
     }
@@ -72,54 +129,76 @@ export default class App extends PureComponent<Props> {
     unsubscribeFromThisDeviceChanged(this.handleThisDeviceChanged);
   }
 
+  beginFindPeers = async () => {
+    const status = await startDiscoveringPeers();
+    status.promise
+      .then(() => {
+        console.log(' MTL: startDiscoveringPeers ok: ');
+      })
+      .catch((err: any) => {
+        console.log(' MTL: startDiscoveringPeers err: ', err);
+      });
+    console.log(' MTL: startDiscoveringPeers status: ', status);
+  };
+
   handleNewInfo = info => {
-    console.log('OnConnectionInfoUpdated', info);
+    console.log(' MTL: OnConnectionInfoUpdated', info);
   };
 
   handleNewPeers = ({devices}) => {
-    console.log('OnPeersUpdated', devices);
+    console.log(' MTL: OnPeersUpdated', devices);
     this.setState({devices: devices});
   };
 
   handleThisDeviceChanged = groupInfo => {
-    console.log('THIS_DEVICE_CHANGED_ACTION', groupInfo);
+    console.log(' MTL: THIS_DEVICE_CHANGED_ACTION', groupInfo);
   };
 
   connectToFirstDevice = () => {
-    console.log('Connect to: ', this.state.devices[0]);
+    console.log(' MTL: Connect to: ', this.state.devices[0]);
     connect(this.state.devices[0].deviceAddress)
-      .then(() => console.log('Successfully connected'))
-      .catch(err => console.error('Something gone wrong. Details: ', err));
+      .then(() => console.log(' MTL: Successfully connected'))
+      .catch(err =>
+        console.error(' MTL: Something gone wrong. Details: ', err),
+      );
   };
 
   onCancelConnect = () => {
     cancelConnect()
       .then(() =>
-        console.log('cancelConnect', 'Connection successfully canceled'),
+        console.log(' MTL: cancelConnect', 'Connection successfully canceled'),
       )
       .catch(err =>
-        console.error('cancelConnect', 'Something gone wrong. Details: ', err),
+        console.error(
+          ' MTL: cancelConnect',
+          'Something gone wrong. Details: ',
+          err,
+        ),
       );
   };
 
   onCreateGroup = () => {
     createGroup()
-      .then(() => console.log('Group created successfully!'))
-      .catch(err => console.error('Something gone wrong. Details: ', err));
+      .then(() => console.log(' MTL: Group created successfully!'))
+      .catch(err =>
+        console.error(' MTL: Something gone wrong. Details: ', err),
+      );
   };
 
   onRemoveGroup = () => {
     removeGroup()
       .then(() => console.log("Currently you don't belong to group!"))
-      .catch(err => console.error('Something gone wrong. Details: ', err));
+      .catch(err =>
+        console.error(' MTL: Something gone wrong. Details: ', err),
+      );
   };
 
   onStopInvestigation = () => {
     stopDiscoveringPeers()
-      .then(() => console.log('Stopping of discovering was successful'))
+      .then(() => console.log(' MTL: Stopping of discovering was successful'))
       .catch(err =>
         console.error(
-          'Something is gone wrong. Maybe your WiFi is disabled? Error details',
+          ' MTL: Something is gone wrong. Maybe your WiFi is disabled? Error details',
           err,
         ),
       );
@@ -129,19 +208,19 @@ export default class App extends PureComponent<Props> {
     startDiscoveringPeers()
       .then(status =>
         console.log(
-          'startDiscoveringPeers',
+          ' MTL: startDiscoveringPeers',
           `Status of discovering peers: ${status}`,
         ),
       )
       .catch(err =>
         console.error(
-          `Something is gone wrong. Maybe your WiFi is disabled? Error details: ${err}`,
+          ` MTL: Something is gone wrong. Maybe your WiFi is disabled? Error details: ${err}`,
         ),
       );
   };
 
   onGetAvailableDevices = () => {
-    getAvailablePeers().then(peers => console.log(peers));
+    getAvailablePeers().then(peers => console.log(` MTL: ${peers}`));
   };
 
   onSendFile = () => {
@@ -157,9 +236,9 @@ export default class App extends PureComponent<Props> {
     )
       .then(granted => {
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('You can use the storage');
+          console.log(' MTL: You can use the storage');
         } else {
-          console.log('Storage permission denied');
+          console.log(' MTL: Storage permission denied');
         }
       })
       .then(() => {
@@ -173,10 +252,12 @@ export default class App extends PureComponent<Props> {
       })
       .then(() => {
         return sendFile(url)
-          .then(metaInfo => console.log('File sent successfully', metaInfo))
-          .catch(err => console.log('Error while file sending', err));
+          .then(metaInfo =>
+            console.log(' MTL: File sent successfully', metaInfo),
+          )
+          .catch(err => console.log(' MTL: Error while file sending', err));
       })
-      .catch(err => console.log(err));
+      .catch(err => console.log(` MTL: ${err}`));
   };
 
   onReceiveFile = () => {
@@ -189,9 +270,9 @@ export default class App extends PureComponent<Props> {
     )
       .then(granted => {
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('You can use the storage');
+          console.log(' MTL: You can use the storage');
         } else {
-          console.log('Storage permission denied');
+          console.log(' MTL: Storage permission denied');
         }
       })
       .then(() => {
@@ -208,35 +289,70 @@ export default class App extends PureComponent<Props> {
           '/storage/emulated/0/Music/',
           'BFMV:Letting You Go.mp3',
         )
-          .then(() => console.log('File received successfully'))
-          .catch(err => console.log('Error while file receiving', err));
+          .then(() => console.log(' MTL: File received successfully'))
+          .catch(err => console.log(' MTL: Error while file receiving', err));
       })
-      .catch(err => console.log(err));
+      .catch(err => console.log(` MTL: ${err}`));
   };
 
   onSendMessage = () => {
     sendMessage('Hello world!')
-      .then(metaInfo => console.log('Message sent successfully', metaInfo))
-      .catch(err => console.log('Error while message sending', err));
+      .then(metaInfo =>
+        console.log(' MTL: Message sent successfully', metaInfo),
+      )
+      .catch(err => console.log(' MTL: Error while message sending', err));
   };
 
   onReceiveMessage = () => {
     receiveMessage()
-      .then(msg => console.log('Message received successfully', msg))
-      .catch(err => console.log('Error while message receiving', err));
+      .then(msg => console.log(' MTL: Message received successfully', msg))
+      .catch(err => console.log(' MTL: Error while message receiving', err));
   };
 
   onGetConnectionInfo = () => {
-    getConnectionInfo().then(info => console.log('getConnectionInfo', info));
+    getConnectionInfo().then(info =>
+      console.log(' MTL: getConnectionInfo', info),
+    );
   };
 
   onGetGroupInfo = () => {
-    getGroupInfo().then(info => console.log('getGroupInfo', info));
+    getGroupInfo().then(info => console.log(' MTL: getGroupInfo', info));
   };
 
   render() {
     return (
       <View style={styles.container}>
+        <View style={{height: 8}} />
+        <View style={styles.buttonDirection}>
+          <Button
+            title={'settings'}
+            onPress={() => {
+              activityStarter.navigateToSetting();
+            }}
+          />
+          <View style={{width: 50}} />
+          <Button
+            title={'discoverPeers'}
+            onPress={() => {
+              console.log('MTL: discoverPeers clicked.');
+            }}
+          />
+        </View>
+        <View style={styles.listItem}>
+          <FlatList
+            style={{flex: 1}}
+            data={this.state.data}
+            renderItem={({item}) => <Item item={item} />}
+            keyExtractor={item => item.email}
+          />
+        </View>
+      </View>
+    );
+
+    /*return (
+      <View style={styles.container}>
+        <Button title="beginFindPeers" onPress={this.beginFindPeers} />
+        <View style={styles.button} />
         <Button title="Connect" onPress={this.connectToFirstDevice} />
         <View style={styles.button} />
         <Button title="Cancel connect" onPress={this.onCancelConnect} />
@@ -272,7 +388,7 @@ export default class App extends PureComponent<Props> {
         <View style={styles.button} />
         <Button title="Receive message" onPress={this.onReceiveMessage} />
       </View>
-    );
+    );*/
   }
 }
 
@@ -295,5 +411,23 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333333',
     marginBottom: 5,
+  },
+
+  buttonDirection: {
+    flexDirection: 'row',
+  },
+
+  buttonPad: {
+    marginRight: 50,
+  },
+  listItem: {
+    margin: 10,
+    padding: 10,
+    backgroundColor: '#FFF',
+    width: '80%',
+    flex: 1,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    borderRadius: 5,
   },
 });
